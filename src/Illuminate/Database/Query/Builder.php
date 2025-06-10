@@ -2857,6 +2857,17 @@ class Builder implements BuilderContract
     }
 
     /**
+     * Add descending "reorder" clause to the query.
+     *
+     * @param  \Closure|\Illuminate\Database\Query\Builder|\Illuminate\Contracts\Database\Query\Expression|string|null  $column
+     * @return $this
+     */
+    public function reorderDesc($column)
+    {
+        return $this->reorder($column, 'desc');
+    }
+
+    /**
      * Get an array with all orders with a given column removed.
      *
      * @param  string  $column
@@ -3898,11 +3909,9 @@ class Builder implements BuilderContract
     /**
      * Insert new records or update the existing ones.
      *
-     * @param  array|string  $uniqueBy
-     * @param  array|null  $update
      * @return int
      */
-    public function upsert(array $values, $uniqueBy, $update = null)
+    public function upsert(array $values, array|string $uniqueBy, ?array $update = null)
     {
         if (empty($values)) {
             return 0;

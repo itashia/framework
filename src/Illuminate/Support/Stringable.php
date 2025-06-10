@@ -1347,6 +1347,28 @@ class Stringable implements JsonSerializable, ArrayAccess, BaseStringable
     }
 
     /**
+     * Encrypt the string.
+     *
+     * @param  bool  $serialize
+     * @return static
+     */
+    public function encrypt(bool $serialize = false)
+    {
+        return new static(encrypt($this->value, $serialize));
+    }
+
+    /**
+     * Decrypt the string.
+     *
+     * @param  bool  $serialize
+     * @return static
+     */
+    public function decrypt(bool $serialize = false)
+    {
+        return new static(decrypt($this->value, $serialize));
+    }
+
+    /**
      * Dump the string.
      *
      * @param  mixed  ...$args
@@ -1428,6 +1450,16 @@ class Stringable implements JsonSerializable, ArrayAccess, BaseStringable
         }
 
         return Date::createFromFormat($format, $this->value, $tz);
+    }
+
+    /**
+     * Get the underlying string value as a Uri instance.
+     *
+     * @return \Illuminate\Support\Uri
+     */
+    public function toUri()
+    {
+        return Uri::of($this->value);
     }
 
     /**
