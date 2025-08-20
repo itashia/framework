@@ -1772,6 +1772,10 @@ class SupportCollectionTest extends TestCase
     {
         $data = new $collection([[1 => 'a'], [3 => 'c'], [2 => 'b'], 'drop']);
         $this->assertEquals([1 => 'a', 3 => 'c', 2 => 'b'], $data->collapseWithKeys()->all());
+
+        // Case with an already flat collection
+        $data = new $collection(['a', 'b', 'c']);
+        $this->assertEquals([], $data->collapseWithKeys()->all());
     }
 
     #[DataProvider('collectionClassProvider')]
@@ -2317,6 +2321,28 @@ class SupportCollectionTest extends TestCase
         ]);
 
         $this->assertEquals([['php', 'python'], ['php', 'asp', 'java']], $data->pluck('skill.backend')->all());
+    }
+
+    #[DataProvider('collectionClassProvider')]
+    public function testPluckWithClosure($collection)
+    {
+        $data = new $collection([
+            [
+                'name' => 'amir',
+                'skill' => [
+                    'backend' => ['php', 'python'],
+                ],
+            ],
+            [
+                'name' => 'taylor',
+                'skill' => [
+                    'backend' => ['php', 'asp', 'java'],
+                ],
+            ],
+        ]);
+
+        $this->assertEquals(['amir (verified)', 'taylor (verified)'], $data->pluck(fn (array $row) => "{$row['name']} (verified)")->all());
+        $this->assertEquals(['php/python' => 'amir', 'php/asp/java' => 'taylor'], $data->pluck('name', fn (array $row) => implode('/', $row['skill']['backend']))->all());
     }
 
     #[DataProvider('collectionClassProvider')]
@@ -3619,6 +3645,54 @@ class SupportCollectionTest extends TestCase
         $this->assertFalse($c->doesntContain(function ($value) {
             return is_null($value);
         }));
+    }
+
+    #[DataProvider('collectionClassProvider')]
+    public function testDoesntContainStrict($collection)
+    {
+        $c = new $collection([1, 3, 5, '02']);
+
+        $this->assertFalse($c->doesntContainStrict(1));
+        $this->assertTrue($c->doesntContainStrict('1'));
+        $this->assertTrue($c->doesntContainStrict(2));
+        $this->assertFalse($c->doesntContainStrict('02'));
+        $this->assertTrue($c->doesntContainStrict('2'));
+        $this->assertTrue($c->doesntContainStrict(true));
+        $this->assertFalse($c->doesntContainStrict(function ($value) {
+            return $value < 5;
+        }));
+        $this->assertTrue($c->doesntContainStrict(function ($value) {
+            return $value > 5;
+        }));
+
+        $c = new $collection([0]);
+        $this->assertFalse($c->doesntContainStrict(0));
+        $this->assertTrue($c->doesntContainStrict('0'));
+
+        $this->assertTrue($c->doesntContainStrict(false));
+        $this->assertTrue($c->doesntContainStrict(null));
+
+        $c = new $collection([1, null]);
+        $this->assertFalse($c->doesntContainStrict(null));
+        $this->assertTrue($c->doesntContainStrict(0));
+        $this->assertTrue($c->doesntContainStrict(false));
+
+        $c = new $collection([['v' => 1], ['v' => 3], ['v' => '04'], ['v' => 5]]);
+
+        $this->assertFalse($c->doesntContainStrict('v', 1));
+        $this->assertTrue($c->doesntContainStrict('v', 2));
+        $this->assertTrue($c->doesntContainStrict('v', '1'));
+        $this->assertTrue($c->doesntContainStrict('v', 4));
+        $this->assertFalse($c->doesntContainStrict('v', '04'));
+        $this->assertTrue($c->doesntContainStrict('v', '4'));
+
+        $c = new $collection(['date', 'class', (object) ['foo' => 50], '']);
+
+        $this->assertFalse($c->doesntContainStrict('date'));
+        $this->assertFalse($c->doesntContainStrict('class'));
+        $this->assertTrue($c->doesntContainStrict('foo'));
+        $this->assertTrue($c->doesntContainStrict(null));
+        $this->assertFalse($c->doesntContainStrict(''));
     }
 
     #[DataProvider('collectionClassProvider')]

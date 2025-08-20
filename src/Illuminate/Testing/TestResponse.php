@@ -246,6 +246,37 @@ class TestResponse implements ArrayAccess
     }
 
     /**
+     * Assert whether the response is redirecting back to the previous location and the session has the given errors.
+     *
+     * @param  string|array  $keys
+     * @param  mixed  $format
+     * @param  string  $errorBag
+     * @return $this
+     */
+    public function assertRedirectBackWithErrors($keys = [], $format = null, $errorBag = 'default')
+    {
+        $this->assertRedirectBack();
+
+        $this->assertSessionHasErrors($keys, $format, $errorBag);
+
+        return $this;
+    }
+
+    /**
+     * Assert whether the response is redirecting back to the previous location with no errors in the session.
+     *
+     * @return $this
+     */
+    public function assertRedirectBackWithoutErrors()
+    {
+        $this->assertRedirectBack();
+
+        $this->assertSessionHasNoErrors();
+
+        return $this;
+    }
+
+    /**
      * Assert whether the response is redirecting to a given route.
      *
      * @param  \BackedEnum|string  $name
@@ -1726,11 +1757,9 @@ class TestResponse implements ArrayAccess
     {
         $content = $this->content();
 
-        if (function_exists('json_validate') && json_validate($content)) {
-            $this->ddJson($key);
-        }
-
-        dd($content);
+        return json_validate($content)
+            ? $this->ddJson($key)
+            : dd($content);
     }
 
     /**
