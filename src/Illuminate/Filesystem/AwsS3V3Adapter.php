@@ -6,7 +6,7 @@ use Aws\S3\S3Client;
 use Carbon\Carbon;
 use DateTimeInterface;
 use Illuminate\Support\Traits\Conditionable;
-use League\Flysystem\AwsS3V3\AwsS3V3Adapter as S3Adapter;
+use League\Flysystem\FilesystemAdapter as FlysystemAdapter;
 use League\Flysystem\FilesystemOperator;
 use Psr\Http\Message\UriInterface;
 use RuntimeException;
@@ -26,14 +26,14 @@ class AwsS3V3Adapter extends FilesystemAdapter
      * Create a new AwsS3V3FilesystemAdapter instance.
      *
      * @param  \League\Flysystem\FilesystemOperator  $driver
-     * @param  \League\Flysystem\AwsS3V3\AwsS3V3Adapter  $adapter
+     * @param  \League\Flysystem\FilesystemAdapter  $adapter
      * @param  array  $config
      * @param  \Aws\S3\S3Client  $client
      * @return void
      *
      * @throws \RuntimeException If the bucket configuration is missing
      */
-    public function __construct(FilesystemOperator $driver, S3Adapter $adapter, array $config, S3Client $client)
+    public function __construct(FilesystemOperator $driver, FlysystemAdapter $adapter, array $config, S3Client $client)
     {
         foreach (['bucket', 'region', 'credentials'] as $key) {
             if (empty($config[$key])) {

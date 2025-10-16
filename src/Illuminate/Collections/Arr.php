@@ -63,8 +63,12 @@ class Arr
 
     /**
      * Get an array item from an array using "dot" notation.
+     *
+     * @return array
+     *
+     * @throws \InvalidArgumentException
      */
-    public static function array(ArrayAccess|array $array, string|int|null $key, ?array $default = null): array
+    public static function array(ArrayAccess|array $array, string|int|null $key, ?array $default = null)
     {
         $value = Arr::get($array, $key, $default);
 
@@ -79,6 +83,8 @@ class Arr
 
     /**
      * Get a boolean item from an array using "dot" notation.
+     *
+     * @throws \InvalidArgumentException
      */
     public static function boolean(ArrayAccess|array $array, string|int|null $key, ?bool $default = null): bool
     {
@@ -105,12 +111,10 @@ class Arr
 
         foreach ($array as $values) {
             if ($values instanceof Collection) {
-                $values = $values->all();
-            } elseif (! is_array($values)) {
-                continue;
+                $results[] = $values->all();
+            } elseif (is_array($values)) {
+                $results[] = $values;
             }
-
-            $results[] = $values;
         }
 
         return array_merge([], ...$results);
@@ -230,7 +234,7 @@ class Arr
             return $array->offsetExists($key);
         }
 
-        if (is_float($key)) {
+        if (is_float($key) || is_null($key)) {
             $key = (string) $key;
         }
 
@@ -254,6 +258,10 @@ class Arr
         if (is_null($callback)) {
             if (empty($array)) {
                 return value($default);
+            }
+
+            if (is_array($array)) {
+                return array_first($array);
             }
 
             foreach ($array as $item) {
@@ -283,7 +291,7 @@ class Arr
     public static function last($array, ?callable $callback = null, $default = null)
     {
         if (is_null($callback)) {
-            return empty($array) ? value($default) : end($array);
+            return empty($array) ? value($default) : array_last($array);
         }
 
         return static::first(array_reverse($array, true), $callback, $default);
@@ -337,6 +345,8 @@ class Arr
 
     /**
      * Get a float item from an array using "dot" notation.
+     *
+     * @throws \InvalidArgumentException
      */
     public static function float(ArrayAccess|array $array, string|int|null $key, ?float $default = null): float
     {
@@ -444,7 +454,7 @@ class Arr
         }
 
         if (! str_contains($key, '.')) {
-            return $array[$key] ?? value($default);
+            return value($default);
         }
 
         foreach (explode('.', $key) as $segment) {
@@ -574,6 +584,8 @@ class Arr
 
     /**
      * Get an integer item from an array using "dot" notation.
+     *
+     * @throws \InvalidArgumentException
      */
     public static function integer(ArrayAccess|array $array, string|int|null $key, ?int $default = null): int
     {
@@ -633,7 +645,7 @@ class Arr
         }
 
         if (count($array) === 1) {
-            return end($array);
+            return array_last($array);
         }
 
         $finalItem = array_pop($array);
@@ -644,7 +656,7 @@ class Arr
     /**
      * Key an associative array by a field or using a callback.
      *
-     * @param  array  $array
+     * @param  iterable  $array
      * @param  callable|array|string  $keyBy
      * @return array
      */
@@ -1020,7 +1032,7 @@ class Arr
     /**
      * Sort the array using the given callback or "dot" notation.
      *
-     * @param  array  $array
+     * @param  iterable  $array
      * @param  callable|array|string|null  $callback
      * @return array
      */
@@ -1032,7 +1044,7 @@ class Arr
     /**
      * Sort the array in descending order using the given callback or "dot" notation.
      *
-     * @param  array  $array
+     * @param  iterable  $array
      * @param  callable|array|string|null  $callback
      * @return array
      */
@@ -1084,6 +1096,8 @@ class Arr
 
     /**
      * Get a string item from an array using "dot" notation.
+     *
+     * @throws \InvalidArgumentException
      */
     public static function string(ArrayAccess|array $array, string|int|null $key, ?string $default = null): string
     {

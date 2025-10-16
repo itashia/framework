@@ -1,4 +1,5 @@
 # {{ $exception->class() }} - {!! $exception->title() !!}
+
 {!! $exception->message() !!}
 
 PHP {{ PHP_VERSION }}
@@ -13,7 +14,7 @@ Laravel {{ app()->version() }}
 
 ## Request
 
-{{ $exception->request()->method() }} {{ Str::start($exception->request()->path(), '/') }}
+{{ $exception->request()->method() }} {{ \Illuminate\Support\Str::start($exception->request()->path(), '/') }}
 
 ## Headers
 
